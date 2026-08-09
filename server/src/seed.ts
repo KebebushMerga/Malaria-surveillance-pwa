@@ -84,19 +84,44 @@ const seed = async () => {
       console.log("Development health facility created");
     }
 
-    // 5. Create/find Facility User role
-    let role = await Role.findOne({
-      name: "Facility User",
-    });
+    // 5. Create/find all required roles
+const roleDefinitions = [
+  {
+    name: "Facility User",
+    description: "Authorized health facility user",
+  },
+  {
+    name: "District Admin",
+    description: "Administrator responsible for district-level surveillance",
+  },
+  {
+    name: "Zone Admin",
+    description: "Administrator responsible for zone-level surveillance",
+  },
+  {
+    name: "Regional Admin",
+    description: "Administrator responsible for regional-level surveillance",
+  },
+  {
+    name: "System Admin",
+    description: "Administrator with system-level access",
+  },
+] as const;
 
-    if (!role) {
-      role = await Role.create({
-        name: "Facility User",
-        description: "Authorized health facility user",
-      });
+const roles: Record<string, any> = {};
 
-      console.log("Facility User role created");
-    }
+for (const roleDefinition of roleDefinitions) {
+  let role = await Role.findOne({
+    name: roleDefinition.name,
+  });
+
+  if (!role) {
+    role = await Role.create(roleDefinition);
+    console.log(`${roleDefinition.name} role created`);
+  }
+
+  roles[roleDefinition.name] = role;
+}
 
     // 6. Create development user
     const existingUser = await User.findOne({
@@ -115,7 +140,7 @@ const seed = async () => {
         name: "Development User",
         email: "devuser@malaria.local",
         password: hashedPassword,
-        role: role._id,
+        role: roles["Facility User"]._id,
         facility: facility._id,
         isActive: true,
       });
@@ -128,6 +153,36 @@ const seed = async () => {
         facility: facility.name,
       });
     }
+
+    // 7. Create development System Admin
+const existingSystemAdmin = await User.findOne({
+  email: "sysadmin@malaria.local",
+});
+
+if (existingSystemAdmin) {
+  console.log("Development System Admin already exists");
+} else {
+  const hashedAdminPassword = await bcrypt.hash(
+    "AdminPassword123!",
+    10
+  );
+
+  const systemAdmin = await User.create({
+    name: "Development System Admin",
+    email: "sysadmin@malaria.local",
+    password: hashedAdminPassword,
+    role: roles["System Admin"]._id,
+    facility: facility._id,
+    isActive: true,
+  });
+
+  console.log("Development System Admin created:");
+  console.log({
+    id: systemAdmin._id.toString(),
+    email: systemAdmin.email,
+    role: "System Admin",
+  });
+}
 
     console.log("Seed completed successfully");
 

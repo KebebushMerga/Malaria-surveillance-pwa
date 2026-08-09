@@ -3,7 +3,7 @@ import express from "express";
 import { connectDatabase } from "./config/database";
 import authRoutes from "./routes/authRoutes";
 import "./models/Role";
-
+import userRoutes from "./routes/userRoutes";
 
 
 const app = express();
@@ -13,6 +13,7 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
 
 app.get("/api/health", (_req, res) => {
