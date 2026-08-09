@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { connectDatabase } from "./config/database";
 import authRoutes from "./routes/authRoutes";
+import "./models/Role";
 
 
 const app = express();

@@ -38,7 +38,7 @@ export const login = async (req: Request, res: Response) => {
 
     if (!passwordMatch) {
       return res.status(401).json({
-        message: "email or password",
+        message: "Invalid email or password",
       });
     }
 
@@ -55,12 +55,12 @@ export const login = async (req: Request, res: Response) => {
       message: "Login successful",
       token,
       user: {
-  id: user._id,
-  name: user.name,
-  email: user.email,
-  role: role.name,
-  facility: user.facility,
-},
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: role.name,
+        facility: user.facility,
+      },
     });
   } catch (error) {
     console.error("Login error:", error);
