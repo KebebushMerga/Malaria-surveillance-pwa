@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import User from "../models/User";
 import { generateToken } from "../utils/jwt";
+import { createAuditLog } from "../utils/auditLogger";
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -51,6 +52,12 @@ export const login = async (req: Request, res: Response) => {
       role: role.name,
     });
 
+    await createAuditLog({
+  userId: user._id.toString(),
+  action: "LOGIN",
+  entity: "Authentication",
+});
+
     return res.status(200).json({
       message: "Login successful",
       token,
@@ -64,6 +71,28 @@ export const login = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Login error:", error);
+
+    return res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+
+    await createAuditLog({
+      userId,
+      action: "LOGOUT",
+      entity: "Authentication",
+    });
+
+    return res.status(200).json({
+      message: "Logout successful",
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
 
     return res.status(500).json({
       message: "Server error",
